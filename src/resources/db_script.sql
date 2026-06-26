@@ -1,5 +1,5 @@
 create table Labour (
-    id int auto_increment primary key,
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     first_name varchar(50) not null,
     last_name varchar(50) not null,
     wage int,
