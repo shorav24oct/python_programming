@@ -1,26 +1,47 @@
 from loguru import logger
 import psycopg2
 
-def execute_query(config, query):
-    try:
-        connector = psycopg2.connect(
-            host=config.get('postgre_database', 'host'),
-            port=config.get('postgre_database', 'port'),
-            database=config.get('postgre_database', 'database'),
-            user=config.get('postgre_database', 'user'),
-            password=config.get('postgre_database', 'password')
-        )
+class PostgreConnection:
+    def __init__(self, config):
+        self.config = config
+        self.connection = None
+        self.cursor = None
 
-        cursor = connector.cursor()
-        cursor.execute(query)
-        results = cursor.fetchall()
-        return results
+    def connect(self):
+        try:
+            self.connection = psycopg2.connect(
+                host=self.config.get('postgre_database', 'host'),
+                port=self.config.get('postgre_database', 'port'),
+                database=self.config.get('postgre_database', 'database'),
+                user=self.config.get('postgre_database', 'user'),
+                password=self.config.get('postgre_database', 'password')
+            )
 
-    except Exception as e:
-        logger.info("Error occurred while executing query: {}", e)
-        raise e
+            logger.info("Successfully connected to PostgreSQL database.")
 
-    finally:
-        cursor.close()
-        connector.close()
+        except Exception as e:
+            logger.info("Error occurred while connecting to PostgreSQL: {}", e)
+            raise e
 
+    def close(self):
+        if self.connection:
+            self.connection.close()
+            logger.info("PostgreSQL connection closed.")
+
+class PostgreCRUDOperations:
+    def __init__(self, postgre_connection):
+        self.postgre_connection = postgre_connection
+
+    def read_from_postgre(self, query):
+        try:
+            cursor = self.postgre_connection.cursor()
+            cursor.execute(query)
+            results = cursor.fetchall()
+            return results
+
+        except Exception as e:
+            logger.info("Error occurred while executing query: {}", e)
+            raise e
+
+        finally:
+            cursor.close()
