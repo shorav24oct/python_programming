@@ -45,3 +45,18 @@ class PostgreCRUDOperations:
 
         finally:
             cursor.close()
+
+    def write_to_postgre(self, query, data):
+        try:
+            cursor = self.postgre_connection.cursor()
+            cursor.execute(query, data)
+            self.postgre_connection.commit()
+            logger.info("Data written to PostgreSQL successfully.")
+
+        except Exception as e:
+            logger.info("Error occurred while executing query: {}", e)
+            self.postgre_connection.rollback()
+            raise e
+
+        finally:
+            cursor.close()
